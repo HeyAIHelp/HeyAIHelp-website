@@ -1,0 +1,48 @@
+/* ============================================================
+   TYPOGRAPHY — Hey AI Help
+   Editorial split: Newsreader serif (display, wt 400, negative tracking)
+   + Inter sans (body/UI, wt 400–500) + JetBrains Mono (code).
+   Display never bold. Negative letter-spacing on display is mandatory.
+   Each token ships as size / weight / line-height / letter-spacing vars.
+   ============================================================ */
+:root {
+  /* ---- Display (Newsreader serif, weight 400) ---- */
+  --type-display-xl-size: 64px;  --type-display-xl-weight: 400; --type-display-xl-lh: 1.05; --type-display-xl-ls: -1.5px;
+  --type-display-lg-size: 48px;  --type-display-lg-weight: 400; --type-display-lg-lh: 1.1;  --type-display-lg-ls: -1px;
+  --type-display-md-size: 36px;  --type-display-md-weight: 400; --type-display-md-lh: 1.15; --type-display-md-ls: -0.5px;
+  --type-display-sm-size: 28px;  --type-display-sm-weight: 400; --type-display-sm-lh: 1.2;  --type-display-sm-ls: -0.3px;
+
+  /* ---- Titles (Inter, weight 500) ---- */
+  --type-title-lg-size: 22px; --type-title-lg-weight: 500; --type-title-lg-lh: 1.3; --type-title-lg-ls: 0;
+  --type-title-md-size: 18px; --type-title-md-weight: 500; --type-title-md-lh: 1.4; --type-title-md-ls: 0;
+  --type-title-sm-size: 16px; --type-title-sm-weight: 500; --type-title-sm-lh: 1.4; --type-title-sm-ls: 0;
+
+  /* ---- Body (Inter, weight 400) ---- */
+  --type-body-md-size: 16px; --type-body-md-weight: 400; --type-body-md-lh: 1.55; --type-body-md-ls: 0;
+  --type-body-sm-size: 14px; --type-body-sm-weight: 400; --type-body-sm-lh: 1.55; --type-body-sm-ls: 0;
+
+  /* ---- Captions / labels (Inter, weight 500) ---- */
+  --type-caption-size: 13px; --type-caption-weight: 500; --type-caption-lh: 1.4; --type-caption-ls: 0;
+  --type-caption-upper-size: 12px; --type-caption-upper-weight: 500; --type-caption-upper-lh: 1.4; --type-caption-upper-ls: 1.5px;
+
+  /* ---- Code (JetBrains Mono) ---- */
+  --type-code-size: 14px; --type-code-weight: 400; --type-code-lh: 1.6; --type-code-ls: 0;
+
+  /* ---- Interactive labels (Inter, weight 500) ---- */
+  --type-button-size: 14px;   --type-button-weight: 500;   --type-button-lh: 1.0; --type-button-ls: 0;
+  --type-nav-link-size: 14px; --type-nav-link-weight: 500; --type-nav-link-lh: 1.4; --type-nav-link-ls: 0;
+}
+
+/* ---- Ready-to-apply utility classes ---- */
+.t-display-xl { font-family: var(--font-display); font-size: var(--type-display-xl-size); font-weight: var(--type-display-xl-weight); line-height: var(--type-display-xl-lh); letter-spacing: var(--type-display-xl-ls); }
+.t-display-lg { font-family: var(--font-display); font-size: var(--type-display-lg-size); font-weight: var(--type-display-lg-weight); line-height: var(--type-display-lg-lh); letter-spacing: var(--type-display-lg-ls); }
+.t-display-md { font-family: var(--font-display); font-size: var(--type-display-md-size); font-weight: var(--type-display-md-weight); line-height: var(--type-display-md-lh); letter-spacing: var(--type-display-md-ls); }
+.t-display-sm { font-family: var(--font-display); font-size: var(--type-display-sm-size); font-weight: var(--type-display-sm-weight); line-height: var(--type-display-sm-lh); letter-spacing: var(--type-display-sm-ls); }
+.t-title-lg { font-family: var(--font-body); font-size: var(--type-title-lg-size); font-weight: var(--type-title-lg-weight); line-height: var(--type-title-lg-lh); }
+.t-title-md { font-family: var(--font-body); font-size: var(--type-title-md-size); font-weight: var(--type-title-md-weight); line-height: var(--type-title-md-lh); }
+.t-title-sm { font-family: var(--font-body); font-size: var(--type-title-sm-size); font-weight: var(--type-title-sm-weight); line-height: var(--type-title-sm-lh); }
+.t-body-md { font-family: var(--font-body); font-size: var(--type-body-md-size); font-weight: var(--type-body-md-weight); line-height: var(--type-body-md-lh); }
+.t-body-sm { font-family: var(--font-body); font-size: var(--type-body-sm-size); font-weight: var(--type-body-sm-weight); line-height: var(--type-body-sm-lh); }
+.t-caption { font-family: var(--font-body); font-size: var(--type-caption-size); font-weight: var(--type-caption-weight); line-height: var(--type-caption-lh); }
+.t-caption-upper { font-family: var(--font-body); font-size: var(--type-caption-upper-size); font-weight: var(--type-caption-upper-weight); line-height: var(--type-caption-upper-lh); letter-spacing: var(--type-caption-upper-ls); text-transform: uppercase; }
+.t-code { font-family: var(--font-mono); font-size: var(--type-code-size); font-weight: var(--type-code-weight); line-height: var(--type-code-lh); }

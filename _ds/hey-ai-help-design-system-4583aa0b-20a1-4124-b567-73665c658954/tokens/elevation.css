@@ -1,0 +1,11 @@
+/* ============================================================
+   ELEVATION — Hey AI Help
+   Color-block first, shadow rare. Most depth is cream-vs-dark contrast.
+   ============================================================ */
+:root {
+  --shadow-none: none;
+  /* The single, rarely-used hover-elevation shadow. */
+  --shadow-subtle: 0 1px 3px rgba(20, 20, 19, 0.08);
+  /* Coral focus ring (text-input-focused). */
+  --ring-focus: 0 0 0 3px rgba(204, 120, 92, 0.15);
+}

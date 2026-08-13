@@ -1,0 +1,13 @@
+/* ============================================================
+   RADIUS — Hey AI Help
+   Hierarchical: 8px buttons/inputs · 12px cards · 16px hero · pill badges.
+   ============================================================ */
+:root {
+  --radius-xs: 4px;     /* badge accents, tiny dropdowns */
+  --radius-sm: 6px;     /* small inline buttons, dropdown items */
+  --radius-md: 8px;     /* CTA buttons, text inputs, category tabs */
+  --radius-lg: 12px;    /* content cards (feature, pricing, code, model) */
+  --radius-xl: 16px;    /* hero illustration container, marquee components */
+  --radius-pill: 9999px;/* badge pills, NEW tags */
+  --radius-full: 9999px;/* avatars, circular icon buttons */
+}

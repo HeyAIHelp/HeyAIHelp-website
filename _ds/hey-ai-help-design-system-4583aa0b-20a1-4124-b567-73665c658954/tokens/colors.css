@@ -1,0 +1,48 @@
+/* ============================================================
+   COLORS — Hey AI Help
+   Trinity: warm cream canvas + coral accent + dark navy product surfaces.
+   Base hex values + semantic aliases. Never inline hex in components —
+   reference the var() tokens.
+   ============================================================ */
+:root {
+  /* --- Brand & accent --- */
+  --color-primary: #cc785c;          /* signature warm coral — primary CTAs, coral callout cards, wordmark accent */
+  --color-primary-active: #a9583e;   /* press / darker variant */
+  --color-primary-disabled: #e6dfd8; /* desaturated cream-tinted disabled */
+  --color-accent-teal: #5db8a6;      /* sparing: status dots, active-connection indicators */
+  --color-accent-amber: #e8a55a;     /* sparing: category badges, inline highlights */
+
+  /* --- Surfaces --- */
+  --color-canvas: #faf9f5;             /* default page floor — warm cream */
+  --color-surface-soft: #f5f0e8;       /* soft band backgrounds, dividers */
+  --color-surface-card: #efe9de;       /* feature/content cards — one step darker than canvas */
+  --color-surface-cream-strong: #e8e0d2; /* selected tabs, emphasized bands */
+  --color-surface-dark: #181715;       /* dominant dark surface — code mockups, footer */
+  --color-surface-dark-elevated: #252320; /* elevated cards inside dark bands */
+  --color-surface-dark-soft: #1f1e1b;  /* code-block bg inside larger dark cards */
+  --color-hairline: #e6dfd8;           /* 1px border tone on cream */
+  --color-hairline-soft: #ebe6df;      /* barely-visible inner divider */
+
+  /* --- Text --- */
+  --color-ink: #141413;          /* headlines + primary text — warm near-black */
+  --color-body-strong: #252523;  /* emphasized paragraphs, lead text */
+  --color-body: #3d3d3a;         /* default running text */
+  --color-muted: #6c6a64;        /* sub-heads, breadcrumbs */
+  --color-muted-soft: #8e8b82;   /* captions, fine print, copyright */
+  --color-on-primary: #ffffff;   /* text on coral */
+  --color-on-dark: #faf9f5;      /* cream-tinted white on dark surfaces */
+  --color-on-dark-soft: #a09d96; /* footer body, secondary labels on dark */
+
+  /* --- Semantic --- */
+  --color-success: #5db872;
+  --color-warning: #d4a017;
+  --color-error: #c64545;
+
+  /* --- Convenience aliases --- */
+  --text-heading: var(--color-ink);
+  --text-body: var(--color-body);
+  --text-muted: var(--color-muted);
+  --surface-page: var(--color-canvas);
+  --surface-card: var(--color-surface-card);
+  --border-hairline: var(--color-hairline);
+}

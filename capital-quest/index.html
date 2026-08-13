@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Capital Quest</title>
+<meta name="description" content="Fly, find, and learn all 50 states & capitals — from the makers of Harmonize to Memorize.">
+
+<!-- Social share preview (link-preview card on sites/chat apps that read Open Graph/Twitter tags).
+     og:image and og:url need real absolute URLs matching wherever this page is hosted —
+     update the placeholder domain below to match. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HeyAIHelp.com">
+<meta property="og:title" content="Capital Quest">
+<meta property="og:description" content="Fly, find, and learn all 50 states & capitals — from the makers of Harmonize to Memorize.">
+<meta property="og:image" content="https://heyaihelp.com/capital-quest/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://heyaihelp.com/capital-quest/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Capital Quest">
+<meta name="twitter:description" content="Fly, find, and learn all 50 states & capitals — from the makers of Harmonize to Memorize.">
+<meta name="twitter:image" content="https://heyaihelp.com/capital-quest/og-image.png">
+
+<!-- YouTube Playables SDK: MUST be loaded before any game code. -->
+<script src="https://www.youtube.com/game_api/v1"></script>
+
+<style>
+  :root{
+    --sky-top:#4fb8ff;
+    --sky-bot:#bfe9ff;
+    --ink:#0b2545;
+    --panel:#0f2f52;
+    --panel-soft:#144173;
+    --cream:#fef9ee;
+    --gold:#ffce45;
+    --gold-deep:#f5a623;
+    --green:#3ddc84;
+    --red:#ff5f5f;
+    --purple:#9b7bff;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none;}
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:#08213d;
+    color:var(--cream);
+    touch-action:none;
+  }
+  #app{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column;
+    background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-bot) 100%);
+  }
+
+  /* ---------- Screens (title / gameover) ---------- */
+  .screen{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:flex-start; overflow-y:auto;
+    padding:22px 18px 30px; opacity:0; pointer-events:none; transition:opacity .25s ease;
+    z-index:20;
+  }
+  .screen::before{ content:""; margin-top:auto; }
+  .screen::after{ content:""; margin-bottom:auto; }
+  .screen.active{ opacity:1; pointer-events:auto; }
+  .screen-bg{
+    position:absolute; inset:0; z-index:-1; overflow:hidden;
+  }
+  .screen-bg img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    filter:blur(3px) saturate(1.05) brightness(.85);
+    transform:scale(1.08);
+  }
+  .screen-bg::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(8,33,61,.55) 0%, rgba(8,33,61,.82) 100%);
+  }
+
+  h1.title{
+    font-family:Georgia,'Times New Roman',serif; font-weight:800; font-size:38px; margin:6px 0 2px;
+    text-align:center; color:var(--cream); letter-spacing:.01em;
+    text-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+  .subtitle{ color:#dce9ff; text-align:center; font-size:14px; margin-bottom:16px; max-width:340px; line-height:1.4;}
+
+  .plane-card{
+    position:relative; width:min(280px,72vw); aspect-ratio:3/2; border-radius:20px;
+    overflow:hidden; margin:2px auto 16px; box-shadow:0 10px 24px rgba(0,0,0,.35), 0 0 0 3px rgba(255,255,255,.15) inset;
+    background:#7c7f82;
+  }
+  .plane-card img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 42%; }
+  .plane-card::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(ellipse at center, transparent 40%, rgba(8,33,61,.55) 100%);
+  }
+  .plane-card .badge-fly{
+    position:absolute; left:0; right:0; bottom:0; padding:6px 0 7px; text-align:center;
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--cream);
+    background:linear-gradient(0deg, rgba(8,33,61,.85), rgba(8,33,61,0));
+  }
+
+  .btn{
+    appearance:none; border:none; cursor:pointer; border-radius:16px;
+    padding:15px 36px; font-size:19px; font-weight:800; color:var(--ink);
+    background:linear-gradient(180deg,var(--gold) 0%,var(--gold-deep) 100%);
+    box-shadow:0 6px 0 #b5720f, 0 10px 18px rgba(0,0,0,.35);
+    transition:transform .08s ease; margin:6px 0;
+  }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #b5720f, 0 4px 10px rgba(0,0,0,.35); }
+  .btn.secondary{
+    background:transparent; color:var(--cream); box-shadow:none;
+    border:2px solid rgba(255,255,255,.4); padding:11px 26px; font-size:14px; font-weight:700;
+  }
+  .btn.secondary:active{ transform:translateY(2px); background:rgba(255,255,255,.08); }
+  .btn.small{ padding:10px 20px; font-size:14px; }
+
+  .diff-row{ display:flex; gap:8px; margin:6px 0 18px; }
+  .diff-btn{
+    appearance:none; cursor:pointer; border-radius:12px; padding:10px 16px;
+    font-size:13px; font-weight:800; letter-spacing:.03em;
+    background:rgba(255,255,255,.08); color:var(--cream); border:2px solid rgba(255,255,255,.25);
+  }
+  .diff-btn.active{
+    background:var(--gold); color:var(--ink); border-color:var(--gold);
+    box-shadow:0 4px 0 #b5720f;
+  }
+  .diff-desc{ font-size:12px; color:#cfe0f7; text-align:center; max-width:280px; margin-bottom:14px; min-height:16px;}
+
+  .best-pill{
+    display:flex; align-items:center; gap:8px; background:rgba(0,0,0,.28);
+    border-radius:999px; padding:7px 18px; font-size:13px; font-weight:700; color:var(--gold);
+    margin-bottom:6px; border:1px solid rgba(255,255,255,.15);
+  }
+
+  .studio-badge{
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#9fc3ee;
+    text-align:center; margin-bottom:8px; line-height:1.5;
+  }
+  .studio-badge .studio-name{
+    display:block; font-family:Georgia,'Times New Roman',serif; font-style:italic;
+    font-size:17px; color:var(--gold); text-transform:none; letter-spacing:.02em; margin-top:2px;
+  }
+  .mode-row{ display:flex; gap:12px; margin:10px 0 18px; flex-wrap:wrap; justify-content:center; }
+  .mode-btn{
+    appearance:none; cursor:pointer; border-radius:18px; padding:16px 14px;
+    width:150px; text-align:center; background:rgba(255,255,255,.08);
+    border:2px solid rgba(255,255,255,.22); color:var(--cream);
+    transition:transform .08s ease, background .15s ease, border-color .15s ease;
+  }
+  .mode-btn:active{ transform:translateY(3px); }
+  .mode-btn.active{
+    background:rgba(255,206,69,.16); border-color:var(--gold);
+    box-shadow:0 0 0 1px rgba(255,206,69,.35) inset;
+  }
+  .mode-icon{ font-size:30px; margin-bottom:6px; }
+  .mode-title{ font-size:14px; font-weight:800; margin-bottom:6px; }
+  .mode-desc{ font-size:11.5px; color:#cfe0f7; line-height:1.4; }
+
+  /* ---------- HUD ---------- */
+  #hud{
+    position:relative; z-index:10; flex:0 0 auto;
+    display:flex; align-items:center; gap:14px;
+    padding:8px 10px; background:rgba(11,37,69,.88);
+    border-bottom:2px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(2px);
+  }
+  .hud-stat{
+    display:flex; flex-direction:column; align-items:center; min-width:44px;
+    font-size:10px; font-weight:700; color:#bcd6f5; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .hud-stat b{ font-size:16px; color:var(--cream); font-weight:800; letter-spacing:0; }
+  #livesWrap{ font-size:15px; letter-spacing:1px; }
+  #muteBtn{
+    flex:0 0 auto; margin-left:auto; background:rgba(255,255,255,.12); border:none; border-radius:10px;
+    width:34px; height:34px; font-size:16px; cursor:pointer; color:var(--cream);
+  }
+  #restartBtn{
+    flex:0 0 auto; background:rgba(255,255,255,.12); border:none; border-radius:10px;
+    width:34px; height:34px; font-size:16px; cursor:pointer; color:var(--cream);
+  }
+
+  /* ---------- Mission prompt (lives in the sky above the map; sized off the
+     real viewport, not the scaled map, so it doesn't shrink with the map zoom) ---------- */
+  #missionOverlay{
+    position:absolute; top:3.5%; left:50%; transform:translateX(-50%);
+    width:min(920px,94%); text-align:center; z-index:8; pointer-events:none;
+  }
+  #missionText{
+    font-size:clamp(26px, 5.4vw, 50px); font-weight:800; color:var(--cream); letter-spacing:.01em;
+    text-shadow:0 2px 4px rgba(0,0,0,.35), 0 4px 18px rgba(0,0,0,.4);
+    line-height:1.15;
+  }
+  #timerBarBg{
+    height:clamp(11px, 1.8vw, 18px); width:min(600px,86%); margin:16px auto 0; border-radius:9px;
+    background:rgba(8,33,61,.4); overflow:hidden; border:1px solid rgba(255,255,255,.3);
+    box-shadow:0 2px 8px rgba(0,0,0,.25);
+  }
+  #timerBarFill{
+    height:100%; width:100%; border-radius:8px; background:var(--green);
+    transition:width .12s linear, background-color .2s linear;
+  }
+
+  /* ---------- Stage ---------- */
+  #stageWrap{
+    position:relative; flex:1 1 auto; overflow:hidden;
+  }
+  #stage{
+    position:absolute; top:0; left:0; width:1536px; height:1024px; transform-origin:top left;
+  }
+  #mapImg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:0; pointer-events:none; }
+  #stageClickCatcher{ position:absolute; inset:0; }
+
+  .cloud{
+    position:absolute; width:170px; height:96px; top:0; left:0; pointer-events:none;
+    filter:drop-shadow(0 8px 10px rgba(0,0,0,.25));
+    opacity:.92;
+  }
+  .cloud svg{ width:100%; height:100%; }
+  .cloud.flash{ filter:drop-shadow(0 0 18px rgba(255,255,255,.95)) drop-shadow(0 8px 10px rgba(0,0,0,.25)); }
+
+  #plane{
+    position:absolute; width:64px; height:52px; top:0; left:0;
+    margin-left:-32px; margin-top:-26px;
+    pointer-events:none; will-change:transform;
+    filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));
+  }
+  #plane.knocked svg #planeBody{ fill:#ffb3b3; }
+
+  #targetPing{
+    position:absolute; width:36px; height:36px; margin-left:-18px; margin-top:-18px;
+    border-radius:50%; border:3px solid rgba(255,255,255,.9); pointer-events:none;
+    box-shadow:0 0 0 3px rgba(255,206,69,.5);
+    animation:pingPulse 1.1s ease-in-out infinite;
+    display:none;
+  }
+  @keyframes pingPulse{
+    0%,100%{ transform:scale(.85); opacity:.55; }
+    50%{ transform:scale(1.15); opacity:1; }
+  }
+
+  #popupCard{
+    position:absolute; left:50%; top:38%; transform:translate(-50%,-50%) scale(.85);
+    background:rgba(9,32,58,.95); border:2px solid rgba(255,255,255,.25); border-radius:18px;
+    padding:18px 26px; text-align:center; min-width:220px; max-width:80%;
+    opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    z-index:15; box-shadow:0 12px 30px rgba(0,0,0,.4);
+  }
+  #popupCard.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  #popupCard .pc-icon{ font-size:30px; margin-bottom:4px; }
+  #popupCard .pc-title{ font-size:20px; font-weight:800; color:var(--cream); }
+  #popupCard .pc-sub{ font-size:13px; color:#bcd6f5; margin-top:4px; }
+  #popupCard .pc-extra{ font-size:12px; color:var(--gold); margin-top:6px; font-weight:700; }
+  #popupCard.fail .pc-title{ color:#ffd3d3; }
+
+  #quizCard{
+    position:absolute; left:50%; top:27%; transform:translate(-50%,-50%) scale(.85);
+    background:rgba(9,32,58,.97); border:2px solid rgba(255,255,255,.25); border-radius:18px;
+    padding:18px 22px; text-align:center; width:min(420px,86%);
+    opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    z-index:16; box-shadow:0 12px 30px rgba(0,0,0,.4);
+  }
+  #quizCard.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  #quizCard .qz-title{ font-size:15px; font-weight:800; color:var(--green); }
+  #quizCard .qz-question{ font-size:17px; font-weight:800; color:var(--cream); margin:6px 0 14px; }
+  #quizCard .qz-options{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  #quizCard .qz-reveal{ font-size:13px; color:#bcd6f5; margin-top:10px; font-weight:700; min-height:16px; }
+  #quizCard .qz-reveal.earned{ color:var(--gold); }
+  .qz-btn{
+    appearance:none; cursor:pointer; border-radius:12px; padding:12px 8px;
+    font-size:13px; font-weight:700; color:var(--cream);
+    background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.22);
+  }
+  .qz-btn.correct{ background:var(--green); color:var(--ink); border-color:var(--green); }
+  .qz-btn.wrong{ background:var(--red); color:var(--ink); border-color:var(--red); }
+  .qz-btn.disabled{ pointer-events:none; opacity:.85; }
+
+  #congratsCard{
+    position:absolute; left:50%; top:38%; transform:translate(-50%,-50%) scale(.85);
+    background:linear-gradient(160deg, rgba(21,68,120,.98), rgba(9,32,58,.98));
+    border:3px solid var(--gold); border-radius:22px;
+    padding:26px 26px 20px; text-align:center; width:min(380px,88%);
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+    z-index:20; box-shadow:0 18px 44px rgba(0,0,0,.5), 0 0 34px rgba(255,206,69,.4);
+  }
+  #congratsCard.show{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  #congratsCard .cg-icon{ font-size:52px; margin-bottom:4px; animation:cgBounce 1.2s ease-in-out infinite; }
+  @keyframes cgBounce{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+  #congratsCard .cg-title{
+    font-family:Georgia,'Times New Roman',serif; font-size:24px; font-weight:800; color:var(--gold);
+    text-shadow:0 2px 4px rgba(0,0,0,.35);
+  }
+  #congratsCard .cg-sub{ font-size:13px; color:#cfe0f7; margin-top:8px; line-height:1.4; }
+  #congratsCard .cg-prize{ font-size:16px; font-weight:800; color:var(--green); margin:16px 0 18px; }
+  #congratsCard .btn{ width:100%; }
+
+  #flashOverlay{
+    position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:14;
+  }
+  .shake{ animation:shakeAnim .35s ease; }
+  @keyframes shakeAnim{
+    0%,100%{ transform:translate3d(0,0,0); }
+    20%{ transform:translate3d(-8px,4px,0); }
+    40%{ transform:translate3d(7px,-5px,0); }
+    60%{ transform:translate3d(-5px,3px,0); }
+    80%{ transform:translate3d(4px,-2px,0); }
+  }
+
+  /* ---------- Game over review list ---------- */
+  .stat-row{ display:flex; gap:10px; justify-content:center; margin:10px 0 4px; flex-wrap:wrap; }
+  .stat-box{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:14px;
+    padding:10px 18px; text-align:center; min-width:96px;
+  }
+  .stat-box .num{ font-size:24px; font-weight:800; color:var(--gold); }
+  .stat-box .lbl{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#cfe0f7; margin-top:2px; }
+  .new-best{
+    display:inline-block; margin:4px 0 10px; padding:4px 14px; border-radius:999px;
+    background:var(--gold); color:var(--ink); font-weight:800; font-size:12px; letter-spacing:.05em;
+  }
+  #missedWrap{
+    width:100%; max-width:360px; margin:8px 0 14px; background:rgba(0,0,0,.22);
+    border-radius:14px; padding:10px 14px; max-height:34vh; overflow-y:auto;
+  }
+  #missedWrap h3{ font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#ffb3b3; margin:2px 0 8px; text-align:center;}
+  .missed-row{
+    display:flex; justify-content:space-between; font-size:13px; padding:5px 2px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .missed-row:last-child{ border-bottom:none; }
+  .missed-row .st{ font-weight:700; color:var(--cream); }
+  .missed-row .cap{ color:#a9c4e6; }
+  #noMissed{ text-align:center; font-size:13px; color:var(--green); font-weight:700; padding:6px 0; }
+
+  #pauseVeil{
+    position:fixed; inset:0; background:rgba(8,33,61,.85); z-index:30;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  #pauseVeil.show{ opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <audio id="bgMusic" src="theme.mp3" loop preload="auto"></audio>
+
+  <!-- ===== HUD (visible during gameplay) ===== -->
+  <div id="hud" style="display:none;">
+    <div class="hud-stat"><b id="scoreVal">0</b>SCORE</div>
+    <div class="hud-stat"><span id="livesWrap">❤️❤️❤️</span>LIVES</div>
+    <div class="hud-stat"><b id="learnedVal">0/50</b>LEARNED</div>
+    <button id="muteBtn" aria-label="Mute">🔊</button>
+    <button id="restartBtn" aria-label="Main Menu">🔄</button>
+  </div>
+
+  <!-- ===== Stage ===== -->
+  <div id="stageWrap">
+    <div id="stage">
+      <img id="mapImg" src="Map.png" alt="">
+      <div id="stageClickCatcher"></div>
+      <div id="targetPing"></div>
+      <div id="cloudsLayer"></div>
+      <div id="plane">
+        <svg viewBox="0 0 64 52" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="32" cy="46" rx="15" ry="3.4" fill="rgba(0,0,0,.22)"/>
+          <path d="M23 14 L30 4 L34 4 L31 14 Z" fill="#e6e9ec"/>
+          <path d="M14 40 L4 46 L4 49 L16 45 Z" fill="#e6e9ec"/>
+          <path d="M50 40 L60 46 L60 49 L48 45 Z" fill="#e6e9ec"/>
+          <path d="M27 8 Q32 2 37 8 L39 30 Q32 34 25 30 Z" id="planeBody" fill="#f4f6f8"/>
+          <path d="M29 30 L26 42 L32 40 L38 42 L35 30 Z" fill="#e6e9ec"/>
+          <path d="M31 33 L33 33 L34 40 L30 40 Z" fill="#d64545"/>
+          <circle cx="32" cy="14" r="4.4" fill="#4fb8ff" stroke="#0b2545" stroke-width="1"/>
+          <path d="M27 9 Q32 5 37 9" fill="none" stroke="#d64545" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div id="missionOverlay">
+      <div id="missionText">Mission</div>
+      <div id="timerBarBg"><div id="timerBarFill"></div></div>
+    </div>
+  </div>
+
+  <div id="popupCard">
+    <div class="pc-icon">✅</div>
+    <div class="pc-title">STATE</div>
+    <div class="pc-sub">Capital: X</div>
+    <div class="pc-extra">+100</div>
+  </div>
+  <div id="quizCard">
+    <div class="qz-title">🎉 Nice flying!</div>
+    <div class="qz-question">Question?</div>
+    <div class="qz-options" id="qzOptions"></div>
+    <div class="qz-reveal" id="qzReveal"></div>
+  </div>
+  <div id="congratsCard">
+    <div class="cg-icon">🏆</div>
+    <div class="cg-title">All 50 States Found!</div>
+    <div class="cg-sub">You've explored the whole map — keep flying to add to your score!</div>
+    <div class="cg-prize" id="congratsPrize">🎁 Bonus Prize: +1000 points!</div>
+    <button class="btn" id="congratsContinueBtn">▶ Keep Flying!</button>
+    <button class="btn secondary" id="congratsRestartBtn">🔄 Start Over</button>
+  </div>
+  <div id="flashOverlay"></div>
+
+  <!-- ===== Title / mode-select screen ===== -->
+  <div class="screen active" id="screenTitle">
+    <div class="screen-bg"><img src="Map.png" alt=""></div>
+    <div class="studio-badge">✈️ From the Makers of<br><span class="studio-name">Harmonize to Memorize</span></div>
+    <h1 class="title">Capital Quest</h1>
+    <div class="subtitle">Fly your plane around the map, find the state on each mission, and land your score before time runs out!</div>
+    <div class="plane-card"><img src="Plane.png" alt="Little plane on the runway"><div class="badge-fly">Ready for takeoff</div></div>
+    <div class="best-pill">🏆 Best Score: <span id="bestScoreTitle">0</span></div>
+    <div class="mode-row">
+      <button class="mode-btn active" id="modeStateBtn" data-mode="state">
+        <div class="mode-icon">🗺️</div>
+        <div class="mode-title">Find the States</div>
+        <div class="mode-desc">We name a state — you fly there! Then name its capital for a bonus.</div>
+      </button>
+      <button class="mode-btn" id="modeCapitalBtn" data-mode="capital">
+        <div class="mode-icon">🏛️</div>
+        <div class="mode-title">Find the Capitals</div>
+        <div class="mode-desc">We name a capital — you find its state! Then name the state for a bonus.</div>
+      </button>
+    </div>
+    <div class="diff-row" id="diffRow">
+      <button class="diff-btn" data-diff="easy">Easy</button>
+      <button class="diff-btn active" data-diff="normal">Normal</button>
+      <button class="diff-btn" data-diff="hard">Hard</button>
+    </div>
+    <div class="diff-desc" id="diffDesc"></div>
+    <button class="btn" id="startBtn">▶ Start Flying</button>
+    <button class="btn secondary" id="howToBtn">How to Play</button>
+  </div>
+
+  <!-- ===== How to play ===== -->
+  <div class="screen" id="screenHow">
+    <div class="screen-bg"><img src="Map.png" alt=""></div>
+    <h1 class="title" style="font-size:28px;">How to Play</h1>
+    <div class="subtitle" style="max-width:320px; text-align:left; line-height:1.6;">
+      🕹️ <b>Drag / touch</b> anywhere on the map to steer your plane there.<br><br>
+      🎯 <span id="howMissionLine">Each mission names a state — fly there before the timer runs out!</span><br><br>
+      🎁 Land correctly and a bonus question pops up asking <span id="howBonusLine">for its capital</span> — get it right for extra points!<br><br>
+      ⛈️ On Normal &amp; Hard, storm clouds will knock your plane off course — steer around them!<br><br>
+      ❤️ Miss the timer and you lose a life. Run out of lives and it's game over.
+    </div>
+    <button class="btn" id="howBackBtn">Got it!</button>
+  </div>
+
+  <!-- ===== Game over screen ===== -->
+  <div class="screen" id="screenOver">
+    <div class="screen-bg"><img src="Map.png" alt=""></div>
+    <h1 class="title" style="font-size:30px;" id="overTitle">Game Over</h1>
+    <div id="newBestBadge" class="new-best" style="display:none;">🏆 New Best Score!</div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="num" id="finalScore">0</div><div class="lbl">Score</div></div>
+      <div class="stat-box"><div class="num" id="finalLearned">0/50</div><div class="lbl">States Learned</div></div>
+      <div class="stat-box"><div class="num" id="finalBest">0</div><div class="lbl">Best Score</div></div>
+    </div>
+    <div id="missedWrap">
+      <h3>States To Review</h3>
+      <div id="missedList"></div>
+    </div>
+    <button class="btn" id="playAgainBtn">▶ Play Again</button>
+    <button class="btn secondary" id="menuBtn">Main Menu</button>
+  </div>
+
+  <!-- ===== Pause veil ===== -->
+  <div id="pauseVeil">
+    <h1 class="title" style="font-size:28px;">Paused</h1>
+    <button class="btn" id="resumeBtn">▶ Resume</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ Playables SDK safe wrapper ============ */
+  var SDK = (typeof ytgame !== "undefined") ? ytgame : null;
+  function safe(fn){ try{ return fn(); }catch(e){ console.warn("[ytgame]", e); return null; } }
+
+  /* ============ State & capital data ============ */
+  var STATES = [
+    {name:"Alabama",abbr:"AL",capital:"Montgomery",x:69,y:66},
+    {name:"Alaska",abbr:"AK",capital:"Juneau",x:11,y:82},
+    {name:"Arizona",abbr:"AZ",capital:"Phoenix",x:20,y:60},
+    {name:"Arkansas",abbr:"AR",capital:"Little Rock",x:57,y:60},
+    {name:"California",abbr:"CA",capital:"Sacramento",x:7,y:46},
+    {name:"Colorado",abbr:"CO",capital:"Denver",x:33,y:46},
+    {name:"Connecticut",abbr:"CT",capital:"Hartford",x:89,y:32},
+    {name:"Delaware",abbr:"DE",capital:"Dover",x:88,y:39},
+    {name:"Florida",abbr:"FL",capital:"Tallahassee",x:79,y:79},
+    {name:"Georgia",abbr:"GA",capital:"Atlanta",x:76,y:65},
+    {name:"Hawaii",abbr:"HI",capital:"Honolulu",x:33,y:93},
+    {name:"Idaho",abbr:"ID",capital:"Boise",x:19,y:24},
+    {name:"Illinois",abbr:"IL",capital:"Springfield",x:63,y:40},
+    {name:"Indiana",abbr:"IN",capital:"Indianapolis",x:69,y:41},
+    {name:"Iowa",abbr:"IA",capital:"Des Moines",x:55,y:35},
+    {name:"Kansas",abbr:"KS",capital:"Topeka",x:46,y:49},
+    {name:"Kentucky",abbr:"KY",capital:"Frankfort",x:71,y:49},
+    {name:"Louisiana",abbr:"LA",capital:"Baton Rouge",x:58,y:74},
+    {name:"Maine",abbr:"ME",capital:"Augusta",x:93,y:11},
+    {name:"Maryland",abbr:"MD",capital:"Annapolis",x:86,y:39},
+    {name:"Massachusetts",abbr:"MA",capital:"Boston",x:90,y:25},
+    {name:"Michigan",abbr:"MI",capital:"Lansing",x:65,y:20},
+    {name:"Minnesota",abbr:"MN",capital:"Saint Paul",x:54,y:20},
+    {name:"Mississippi",abbr:"MS",capital:"Jackson",x:63,y:67},
+    {name:"Missouri",abbr:"MO",capital:"Jefferson City",x:57,y:48},
+    {name:"Montana",abbr:"MT",capital:"Helena",x:29,y:16},
+    {name:"Nebraska",abbr:"NE",capital:"Lincoln",x:44,y:38},
+    {name:"Nevada",abbr:"NV",capital:"Carson City",x:14,y:40},
+    {name:"New Hampshire",abbr:"NH",capital:"Concord",x:92,y:20},
+    {name:"New Jersey",abbr:"NJ",capital:"Trenton",x:89,y:34},
+    {name:"New Mexico",abbr:"NM",capital:"Santa Fe",x:31,y:61},
+    {name:"New York",abbr:"NY",capital:"Albany",x:82,y:27},
+    {name:"North Carolina",abbr:"NC",capital:"Raleigh",x:83,y:53},
+    {name:"North Dakota",abbr:"ND",capital:"Bismarck",x:43,y:16},
+    {name:"Ohio",abbr:"OH",capital:"Columbus",x:75,y:38},
+    {name:"Oklahoma",abbr:"OK",capital:"Oklahoma City",x:46,y:58},
+    {name:"Oregon",abbr:"OR",capital:"Salem",x:9,y:22},
+    {name:"Pennsylvania",abbr:"PA",capital:"Harrisburg",x:83,y:34},
+    {name:"Rhode Island",abbr:"RI",capital:"Providence",x:91,y:28},
+    {name:"South Carolina",abbr:"SC",capital:"Columbia",x:80,y:60},
+    {name:"South Dakota",abbr:"SD",capital:"Pierre",x:44,y:27},
+    {name:"Tennessee",abbr:"TN",capital:"Nashville",x:69,y:55},
+    {name:"Texas",abbr:"TX",capital:"Austin",x:44,y:73},
+    {name:"Utah",abbr:"UT",capital:"Salt Lake City",x:22,y:43},
+    {name:"Vermont",abbr:"VT",capital:"Montpelier",x:89,y:20},
+    {name:"Virginia",abbr:"VA",capital:"Richmond",x:83,y:46},
+    {name:"Washington",abbr:"WA",capital:"Olympia",x:11,y:10},
+    {name:"West Virginia",abbr:"WV",capital:"Charleston",x:79,y:43},
+    {name:"Wisconsin",abbr:"WI",capital:"Madison",x:61,y:26},
+    {name:"Wyoming",abbr:"WY",capital:"Cheyenne",x:31,y:31}
+  ];
+  var SMALL_STATES = {RI:1,CT:1,NJ:1,DE:1,MD:1,MA:1,VT:1,NH:1,LA:1,NC:1,AL:1,AR:1,MS:1,OK:1,GA:1,SC:1};
+  var TINY_STATES = {VA:1,NC:1};
+  var CUSTOM_RADIUS = {};
+  (function(){
+    for(var i=0;i<STATES.length;i++){
+      var s = STATES[i];
+      s.px = s.x/100*1536; s.py = s.y/100*1024;
+      s.r = (s.abbr==="AK"||s.abbr==="HI") ? 74 : (CUSTOM_RADIUS[s.abbr] || (TINY_STATES[s.abbr] ? 38 : (SMALL_STATES[s.abbr] ? 50 : 66)));
+    }
+  })();
+
+  var DIFFICULTY = {
+    easy:   {label:"Easy",   missionTime:20, clouds:0, cloudSpeed:0,   lives:4, scoreMult:1,   desc:"No storms. Longer timers. Perfect for learning the map."},
+    normal: {label:"Normal", missionTime:15, clouds:2, cloudSpeed:95,  lives:3, scoreMult:1.5, desc:"A couple of storm clouds drift the skies. Standard challenge."},
+    hard:   {label:"Hard",   missionTime:11, clouds:4, cloudSpeed:150, lives:3, scoreMult:2,   desc:"Fast timers and lots of storms. For Capital Quest experts!"}
+  };
+
+  var PLANE_MAX_SPEED = 560;
+  var PLANE_ACCEL = 1900;
+  var PLANE_ARRIVE_RADIUS = 46;
+
+  /* ============ DOM refs ============ */
+  var el = {
+    app: document.getElementById("app"),
+    bgMusic: document.getElementById("bgMusic"),
+    hud: document.getElementById("hud"),
+    missionText: document.getElementById("missionText"),
+    timerBarFill: document.getElementById("timerBarFill"),
+    scoreVal: document.getElementById("scoreVal"),
+    livesWrap: document.getElementById("livesWrap"),
+    learnedVal: document.getElementById("learnedVal"),
+    muteBtn: document.getElementById("muteBtn"),
+    restartBtn: document.getElementById("restartBtn"),
+    stageWrap: document.getElementById("stageWrap"),
+    stage: document.getElementById("stage"),
+    stageClickCatcher: document.getElementById("stageClickCatcher"),
+    cloudsLayer: document.getElementById("cloudsLayer"),
+    plane: document.getElementById("plane"),
+    targetPing: document.getElementById("targetPing"),
+    popupCard: document.getElementById("popupCard"),
+    quizCard: document.getElementById("quizCard"),
+    qzOptions: document.getElementById("qzOptions"),
+    qzReveal: document.getElementById("qzReveal"),
+    congratsCard: document.getElementById("congratsCard"),
+    congratsPrize: document.getElementById("congratsPrize"),
+    congratsContinueBtn: document.getElementById("congratsContinueBtn"),
+    congratsRestartBtn: document.getElementById("congratsRestartBtn"),
+    flashOverlay: document.getElementById("flashOverlay"),
+    screenTitle: document.getElementById("screenTitle"),
+    screenHow: document.getElementById("screenHow"),
+    screenOver: document.getElementById("screenOver"),
+    modeStateBtn: document.getElementById("modeStateBtn"),
+    modeCapitalBtn: document.getElementById("modeCapitalBtn"),
+    howMissionLine: document.getElementById("howMissionLine"),
+    howBonusLine: document.getElementById("howBonusLine"),
+    bestScoreTitle: document.getElementById("bestScoreTitle"),
+    diffRow: document.getElementById("diffRow"),
+    diffDesc: document.getElementById("diffDesc"),
+    startBtn: document.getElementById("startBtn"),
+    howToBtn: document.getElementById("howToBtn"),
+    howBackBtn: document.getElementById("howBackBtn"),
+    overTitle: document.getElementById("overTitle"),
+    newBestBadge: document.getElementById("newBestBadge"),
+    finalScore: document.getElementById("finalScore"),
+    finalLearned: document.getElementById("finalLearned"),
+    finalBest: document.getElementById("finalBest"),
+    missedList: document.getElementById("missedList"),
+    playAgainBtn: document.getElementById("playAgainBtn"),
+    menuBtn: document.getElementById("menuBtn"),
+    pauseVeil: document.getElementById("pauseVeil"),
+    resumeBtn: document.getElementById("resumeBtn")
+  };
+
+  /* ============ Game state ============ */
+  var state = {
+    diff: "normal",
+    questionMode: "state", // state | capital
+    audioEnabled: true,
+    running: false,
+    paused: false,
+    phase: "idle", // idle | mission | quiz | transition
+    score: 0,
+    lives: 3,
+    bestScore: 0,
+    deck: [],
+    deckIndex: 0,
+    lastServed: null,
+    target: null,
+    missionType: "flyTo",
+    missionEndTime: 0,
+    missionDurationMs: 0,
+    lastTickSecond: -1,
+    quizAnswered: false,
+    quizEndTime: 0,
+    quizDurationMs: 0,
+    quizTarget: null,
+    learnedSet: {},
+    totalCorrect: 0,
+    congratsTriggered: false,
+    pendingCongrats: false,
+    missedMap: {},
+    plane: { x:768, y:512, vx:0, vy:0, angle:0, tx:768, ty:512, impairedUntil:0 },
+    clouds: [],
+    lastHitTime: -9999,
+    keys: {},
+    stageScale: 1,
+    rafId: null,
+    lastFrameT: 0,
+    runToken: 0
+  };
+
+  /* ============ Audio (Web Audio, generated SFX) ============ */
+  var actx = null;
+  function ensureAudio(){
+    if(actx) return actx;
+    try{ actx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ actx = null; }
+    return actx;
+  }
+  function beep(freq, dur, type, vol, delay){
+    if(!state.audioEnabled) return;
+    var ctx = ensureAudio();
+    if(!ctx) return;
+    try{
+      var t0 = ctx.currentTime + (delay||0);
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.type = type || "sine";
+      o.frequency.setValueAtTime(freq, t0);
+      g.gain.value = vol==null?0.16:vol;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + (dur||0.15));
+      o.stop(t0 + (dur||0.15) + 0.02);
+    }catch(e){}
+  }
+  function noiseBurst(dur, vol){
+    if(!state.audioEnabled) return;
+    var ctx = ensureAudio();
+    if(!ctx) return;
+    try{
+      var bufSize = Math.floor(ctx.sampleRate * dur);
+      var buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      var data = buf.getChannelData(0);
+      for(var i=0;i<bufSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufSize); }
+      var src = ctx.createBufferSource();
+      src.buffer = buf;
+      var filt = ctx.createBiquadFilter();
+      filt.type = "lowpass"; filt.frequency.value = 900;
+      var g = ctx.createGain();
+      g.gain.value = vol==null?0.22:vol;
+      src.connect(filt); filt.connect(g); g.connect(ctx.destination);
+      src.start();
+    }catch(e){}
+  }
+  var sfx = {
+    click: function(){ beep(760,0.06,"square",0.12); },
+    swoosh: function(){ beep(300,0.12,"sine",0.1); },
+    success: function(){ beep(523,0.1,"triangle",0.18); beep(659,0.1,"triangle",0.18,0.09); beep(784,0.16,"triangle",0.2,0.18); },
+    fail: function(){ beep(240,0.18,"sawtooth",0.16); beep(140,0.28,"sawtooth",0.14,0.12); },
+    storm: function(){ noiseBurst(0.22,0.2); beep(90,0.2,"sine",0.18,0.02); },
+    lifeLost: function(){ beep(180,0.28,"square",0.16); },
+    tick: function(){ beep(1000,0.045,"square",0.06); },
+    gameOver: function(){ beep(392,0.14,"sine",0.16); beep(330,0.14,"sine",0.16,0.13); beep(262,0.26,"sine",0.18,0.26); },
+    newBest: function(){ beep(523,0.1,"triangle",0.2); beep(659,0.1,"triangle",0.2,0.1); beep(784,0.1,"triangle",0.2,0.2); beep(1046,0.22,"triangle",0.22,0.3); }
+  };
+
+  /* ============ Background music ============ */
+  el.bgMusic.volume = 0.32;
+  el.bgMusic.muted = !state.audioEnabled;
+  function playMusic(){
+    if(!state.audioEnabled) return;
+    // play() must follow a user gesture; guarded since some WebViews throw
+    // synchronously or don't return a real Promise, and this must never be
+    // allowed to break the caller (startGame() etc. run code right after it).
+    try{
+      var p = el.bgMusic.play();
+      if(p && typeof p.catch === "function"){ p.catch(function(){}); }
+    }catch(e){}
+  }
+
+  /* ============ Persistence ============ */
+  function loadBest(){
+    if(SDK && SDK.game && typeof SDK.game.loadData === "function"){
+      safe(function(){
+        var res = SDK.game.loadData();
+        if(res && typeof res.then === "function"){
+          res.then(function(data){ applyLoadedBest(data); }).catch(function(){ applyLoadedBest(null); });
+        } else {
+          applyLoadedBest(res);
+        }
+      });
+    } else {
+      applyLoadedBest(localStorage.getItem("capitalquest_best"));
+    }
+  }
+  function applyLoadedBest(data){
+    var n = parseInt(data, 10);
+    state.bestScore = isNaN(n) ? 0 : n;
+    el.bestScoreTitle.textContent = state.bestScore;
+  }
+  function saveBest(){
+    if(SDK && SDK.game && typeof SDK.game.saveData === "function"){
+      safe(function(){ SDK.game.saveData(String(state.bestScore)); });
+    } else {
+      try{ localStorage.setItem("capitalquest_best", String(state.bestScore)); }catch(e){}
+    }
+    if(SDK && SDK.engagement && typeof SDK.engagement.sendScore === "function"){
+      safe(function(){ SDK.engagement.sendScore({ value: state.bestScore }); });
+    }
+  }
+
+  /* ============ Screen management ============ */
+  function showScreen(name){
+    [el.screenTitle, el.screenHow, el.screenOver].forEach(function(s){ s.classList.remove("active"); });
+    if(name==="title") el.screenTitle.classList.add("active");
+    if(name==="how") el.screenHow.classList.add("active");
+    if(name==="over") el.screenOver.classList.add("active");
+  }
+
+  /* ============ Stage scaling ============ */
+  function fitStage(){
+    var w = el.stageWrap.clientWidth, h = el.stageWrap.clientHeight;
+    var scale = Math.min(w/1536, h/1024);
+    if(!isFinite(scale) || scale<=0) scale = 1;
+    state.stageScale = scale;
+    var left = (w - 1536*scale)/2, top = (h - 1024*scale)/2;
+    el.stage.style.left = left + "px";
+    el.stage.style.top = top + "px";
+    el.stage.style.transform = "scale(" + scale + ")";
+  }
+  window.addEventListener("resize", fitStage);
+  window.addEventListener("orientationchange", fitStage);
+
+  function clientToLogical(clientX, clientY){
+    var rect = el.stage.getBoundingClientRect();
+    var scale = rect.width/1536 || 1;
+    return { x:(clientX-rect.left)/scale, y:(clientY-rect.top)/scale };
+  }
+
+  /* ============ Deck / mission generation ============ */
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+  function refillDeck(){
+    var d = shuffle(STATES);
+    if(state.lastServed && d[0].abbr === state.lastServed && d.length>1){
+      var tmp = d[0]; d[0]=d[1]; d[1]=tmp;
+    }
+    state.deck = d;
+    state.deckIndex = 0;
+  }
+  function nextTarget(){
+    if(state.deckIndex >= state.deck.length) refillDeck();
+    var t = state.deck[state.deckIndex++];
+    state.lastServed = t.abbr;
+    return t;
+  }
+
+  function startMission(){
+    var cfg = DIFFICULTY[state.diff];
+    state.target = nextTarget();
+    state.missionType = state.questionMode === "capital" ? "findCapital" : "flyTo";
+    state.missionDurationMs = cfg.missionTime * 1000;
+    state.missionEndTime = performance.now() + state.missionDurationMs;
+    state.lastTickSecond = -1;
+    state.phase = "mission";
+
+    var txt = state.missionType === "flyTo"
+      ? ("Fly to " + state.target.name.toUpperCase() + "!")
+      : ("Find the state whose capital is " + state.target.capital.toUpperCase() + "!");
+    el.missionText.textContent = txt;
+    el.timerBarFill.style.background = "";
+    el.timerBarFill.style.width = "100%";
+  }
+
+  /* ============ Lives / score / learned UI ============ */
+  function updateHud(){
+    el.scoreVal.textContent = state.score;
+    var hearts = "";
+    for(var i=0;i<state.lives;i++) hearts += "❤️";
+    el.livesWrap.textContent = hearts || "—";
+    var learnedCount = Object.keys(state.learnedSet).length;
+    var learnedDisplay = learnedCount >= 50 ? state.totalCorrect : learnedCount;
+    el.learnedVal.textContent = learnedDisplay + "/50";
+  }
+
+  /* ============ Clouds ============ */
+  var CLOUD_SVG = '<svg viewBox="0 0 170 96" xmlns="http://www.w3.org/2000/svg">'+
+    '<ellipse cx="55" cy="60" rx="45" ry="28" fill="#f4f7fb"/>'+
+    '<ellipse cx="95" cy="50" rx="55" ry="34" fill="#ffffff"/>'+
+    '<ellipse cx="135" cy="62" rx="34" ry="24" fill="#eef2f7"/>'+
+    '<ellipse cx="30" cy="70" rx="26" ry="18" fill="#e7edf5"/>'+
+    '</svg>';
+
+  function spawnClouds(){
+    el.cloudsLayer.innerHTML = "";
+    state.clouds = [];
+    var cfg = DIFFICULTY[state.diff];
+    for(var i=0;i<cfg.clouds;i++){
+      var c = document.createElement("div");
+      c.className = "cloud";
+      c.innerHTML = CLOUD_SVG;
+      el.cloudsLayer.appendChild(c);
+      var ang = Math.random()*Math.PI*2;
+      state.clouds.push({
+        x: 150 + Math.random()*1236,
+        y: 100 + Math.random()*824,
+        vx: Math.cos(ang)*cfg.cloudSpeed,
+        vy: Math.sin(ang)*cfg.cloudSpeed,
+        r: 78,
+        el: c
+      });
+    }
+  }
+
+  function updateClouds(dt, now){
+    var cfg = DIFFICULTY[state.diff];
+    for(var i=0;i<state.clouds.length;i++){
+      var c = state.clouds[i];
+      c.x += c.vx*dt; c.y += c.vy*dt;
+      if(c.x < -85){ c.x=-85; c.vx*=-1; }
+      if(c.x > 1536+85){ c.x=1536+85; c.vx*=-1; }
+      if(c.y < -48){ c.y=-48; c.vy*=-1; }
+      if(c.y > 1024+48){ c.y=1024+48; c.vy*=-1; }
+      c.el.style.transform = "translate3d(" + (c.x-85) + "px," + (c.y-48) + "px,0)";
+
+      if(cfg.clouds>0 && now - state.lastHitTime > 900){
+        var dx = state.plane.x - c.x, dy = state.plane.y - c.y;
+        var dist = Math.sqrt(dx*dx+dy*dy);
+        if(dist < c.r + 22){
+          hitStorm(c, now);
+        }
+      }
+    }
+  }
+
+  function hitStorm(cloud, now){
+    state.lastHitTime = now;
+    var ang = Math.atan2(state.plane.y-cloud.y, state.plane.x-cloud.x) + (Math.random()-0.5)*1.4;
+    var force = 620 + Math.random()*260;
+    state.plane.vx += Math.cos(ang)*force;
+    state.plane.vy += Math.sin(ang)*force;
+    state.plane.impairedUntil = now + 700;
+    el.plane.classList.add("knocked");
+    setTimeout(function(){ el.plane.classList.remove("knocked"); }, 700);
+    cloud.el.classList.add("flash");
+    setTimeout(function(){ cloud.el.classList.remove("flash"); }, 300);
+    el.app.classList.remove("shake"); void el.app.offsetWidth; el.app.classList.add("shake");
+    sfx.storm();
+  }
+
+  /* ============ Plane physics ============ */
+  function setPlaneTarget(clientX, clientY){
+    var p = clientToLogical(clientX, clientY);
+    state.plane.tx = Math.max(20, Math.min(1516, p.x));
+    state.plane.ty = Math.max(20, Math.min(1004, p.y));
+  }
+
+  var pointerActive = false;
+  el.stageClickCatcher.addEventListener("pointerdown", function(e){
+    if(!state.running || state.paused) return;
+    pointerActive = true;
+    ensureAudio();
+    if(actx && actx.state === "suspended") safe(function(){ actx.resume(); });
+    setPlaneTarget(e.clientX, e.clientY);
+    el.stageClickCatcher.setPointerCapture && el.stageClickCatcher.setPointerCapture(e.pointerId);
+  });
+  el.stageClickCatcher.addEventListener("pointermove", function(e){
+    if(!pointerActive || !state.running || state.paused) return;
+    setPlaneTarget(e.clientX, e.clientY);
+  });
+  function releasePointer(){ pointerActive = false; }
+  el.stageClickCatcher.addEventListener("pointerup", releasePointer);
+  el.stageClickCatcher.addEventListener("pointercancel", releasePointer);
+  el.stageClickCatcher.addEventListener("pointerleave", releasePointer);
+
+  window.addEventListener("keydown", function(e){
+    var k = e.key.toLowerCase();
+    if(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d"].indexOf(k)>=0){
+      state.keys[k]=true; e.preventDefault();
+    }
+  });
+  window.addEventListener("keyup", function(e){
+    var k = e.key.toLowerCase();
+    state.keys[k]=false;
+  });
+
+  function updatePlane(dt, now){
+    var p = state.plane;
+    var kx = 0, ky = 0;
+    if(state.keys["arrowleft"]||state.keys["a"]) kx -= 1;
+    if(state.keys["arrowright"]||state.keys["d"]) kx += 1;
+    if(state.keys["arrowup"]||state.keys["w"]) ky -= 1;
+    if(state.keys["arrowdown"]||state.keys["s"]) ky += 1;
+
+    var tx, ty;
+    if(kx!==0 || ky!==0){
+      var len = Math.sqrt(kx*kx+ky*ky) || 1;
+      tx = p.x + (kx/len)*600;
+      ty = p.y + (ky/len)*600;
+    } else {
+      tx = p.tx; ty = p.ty;
+    }
+
+    var dx = tx - p.x, dy = ty - p.y;
+    var dist = Math.sqrt(dx*dx+dy*dy);
+    var impaired = now < p.impairedUntil;
+    var accel = impaired ? PLANE_ACCEL*0.22 : PLANE_ACCEL;
+    var maxSpd = PLANE_MAX_SPEED;
+
+    if(dist > 1){
+      var desiredSpeed = maxSpd;
+      if(dist < PLANE_ARRIVE_RADIUS) desiredSpeed = maxSpd * (dist/PLANE_ARRIVE_RADIUS);
+      var dirx = dx/dist, diry = dy/dist;
+      var desiredVx = dirx*desiredSpeed, desiredVy = diry*desiredSpeed;
+      p.vx += (desiredVx - p.vx) * Math.min(1, accel*dt/maxSpd);
+      p.vy += (desiredVy - p.vy) * Math.min(1, accel*dt/maxSpd);
+    } else {
+      p.vx *= 0.9; p.vy *= 0.9;
+    }
+
+    if(impaired){
+      p.vx *= 0.995; p.vy *= 0.995;
+    } else {
+      var spd = Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+      if(spd > maxSpd*1.4){
+        var ratio = (maxSpd*1.4)/spd;
+        p.vx *= ratio; p.vy *= ratio;
+      }
+    }
+
+    p.x += p.vx*dt; p.y += p.vy*dt;
+    p.x = Math.max(16, Math.min(1520, p.x));
+    p.y = Math.max(16, Math.min(1008, p.y));
+
+    var speed = Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+    if(speed > 12){
+      var targetAngle = Math.atan2(p.vy, p.vx)*180/Math.PI + 90;
+      var diffA = ((targetAngle - p.angle + 540) % 360) - 180;
+      p.angle += diffA * Math.min(1, dt*8);
+    }
+
+    el.plane.style.transform = "translate3d(" + p.x + "px," + p.y + "px,0) rotate(" + p.angle + "deg)";
+  }
+
+  /* ============ Mission resolution ============ */
+  function checkMissionProgress(now){
+    if(state.phase !== "mission" || !state.target) return;
+
+    var remaining = state.missionEndTime - now;
+    var frac = Math.max(0, Math.min(1, remaining/state.missionDurationMs));
+    el.timerBarFill.style.width = (frac*100) + "%";
+    el.timerBarFill.style.background = frac>0.5 ? "var(--green)" : (frac>0.22 ? "var(--gold)" : "var(--red)");
+
+    var secLeft = Math.ceil(remaining/1000);
+    if(secLeft<=3 && secLeft>0 && secLeft!==state.lastTickSecond){
+      state.lastTickSecond = secLeft;
+      sfx.tick();
+    }
+
+    var dx = state.plane.x - state.target.px, dy = state.plane.y - state.target.py;
+    var dist = Math.sqrt(dx*dx+dy*dy);
+    if(dist <= state.target.r){
+      resolveMission(true, now);
+      return;
+    }
+    if(remaining <= 0){
+      resolveMission(false, now);
+    }
+  }
+
+  function resolveMission(success, now){
+    var t = state.target;
+    var token = state.runToken;
+    state.phase = "transition";
+
+    if(success){
+      var cfg = DIFFICULTY[state.diff];
+      var remaining = Math.max(0, state.missionEndTime - now);
+      var timeBonus = Math.round((remaining/1000) * 8);
+      var points = Math.round((100 + timeBonus) * cfg.scoreMult);
+      state.score += points;
+      state.learnedSet[t.abbr] = true;
+      state.totalCorrect++;
+      sfx.success();
+      updateHud();
+
+      var learnedCountNow = Object.keys(state.learnedSet).length;
+      if(learnedCountNow >= 50 && !state.congratsTriggered){
+        state.congratsTriggered = true;
+        state.pendingCongrats = true;
+      }
+
+      el.targetPing.style.left = t.px + "px";
+      el.targetPing.style.top = t.py + "px";
+      el.targetPing.style.display = "block";
+      setTimeout(function(){
+        if(state.runToken !== token) return;
+        el.targetPing.style.display = "none";
+      }, 900);
+
+      setTimeout(function(){
+        if(state.runToken !== token) return;
+        startQuiz(t, state.missionType);
+      }, 450);
+    } else {
+      state.lives -= 1;
+      state.missedMap[t.abbr] = { name:t.name, capital:t.capital };
+      sfx.fail();
+      sfx.lifeLost();
+      flashRed();
+      showPopup(true, "⏰", "Time's Up!", t.name + " — Capital: " + t.capital, "");
+      updateHud();
+
+      setTimeout(function(){
+        if(state.runToken !== token) return;
+        hidePopup();
+        if(state.lives <= 0){
+          gameOver();
+        } else {
+          startMission();
+        }
+      }, 1700);
+    }
+  }
+
+  /* ============ Bonus quiz (second question per state) ============ */
+  function buildQuiz(target, missionType){
+    var pool = STATES.filter(function(s){ return s.abbr !== target.abbr; });
+    var picks = shuffle(pool).slice(0, 3);
+    var question, correctText, optionTexts;
+    if(missionType === "flyTo"){
+      question = "What's the capital of " + target.name.toUpperCase() + "?";
+      correctText = target.capital;
+      optionTexts = picks.map(function(s){ return s.capital; });
+    } else {
+      question = "Which state has the capital " + target.capital + "?";
+      correctText = target.name;
+      optionTexts = picks.map(function(s){ return s.name; });
+    }
+    return { question: question, correctText: correctText, options: shuffle(optionTexts.concat([correctText])) };
+  }
+
+  function startQuiz(target, missionType){
+    var cfg = DIFFICULTY[state.diff];
+    var quizSeconds = Math.max(6, Math.round(cfg.missionTime * 0.5));
+    var qz = buildQuiz(target, missionType);
+    state.quizData = qz;
+    state.quizTarget = target;
+    state.phase = "quiz";
+    state.quizAnswered = false;
+    state.quizDurationMs = quizSeconds * 1000;
+    state.quizEndTime = performance.now() + state.quizDurationMs;
+    state.lastTickSecond = -1;
+
+    el.missionText.textContent = "🎁 BONUS QUESTION!";
+    el.timerBarFill.style.background = "";
+    el.timerBarFill.style.width = "100%";
+
+    el.quizCard.querySelector(".qz-title").textContent = "🎉 Nice flying!";
+    el.quizCard.querySelector(".qz-question").textContent = qz.question;
+    el.qzReveal.textContent = "";
+    el.qzReveal.classList.remove("earned");
+    el.qzOptions.innerHTML = "";
+    qz.options.forEach(function(optText){
+      var b = document.createElement("button");
+      b.className = "qz-btn";
+      b.textContent = optText;
+      b.addEventListener("click", function(){ resolveQuiz(b); });
+      el.qzOptions.appendChild(b);
+    });
+    el.quizCard.classList.add("show");
+  }
+
+  function resolveQuiz(selectedBtn){
+    if(state.phase !== "quiz" || state.quizAnswered) return;
+    state.quizAnswered = true;
+    var token = state.runToken;
+    var cfg = DIFFICULTY[state.diff];
+    var correctText = state.quizData.correctText;
+    var isCorrect = !!selectedBtn && selectedBtn.textContent === correctText;
+    var target = state.quizTarget;
+
+    var bonus = 0;
+    if(isCorrect){
+      bonus = Math.round(50 * cfg.scoreMult);
+      state.score += bonus;
+      sfx.success();
+    } else {
+      sfx.fail();
+    }
+    updateHud();
+
+    var buttons = el.qzOptions.querySelectorAll(".qz-btn");
+    for(var i=0;i<buttons.length;i++){
+      var b = buttons[i];
+      b.classList.add("disabled");
+      if(b.textContent === correctText) b.classList.add("correct");
+      else if(b === selectedBtn) b.classList.add("wrong");
+    }
+
+    el.quizCard.querySelector(".qz-title").textContent = target.name.toUpperCase();
+    el.qzReveal.classList.toggle("earned", isCorrect);
+    el.qzReveal.textContent = isCorrect
+      ? "Capital: " + target.capital + "   •   +" + bonus + " bonus!"
+      : "Capital: " + target.capital;
+
+    setTimeout(function(){
+      if(state.runToken !== token) return;
+      el.quizCard.classList.remove("show");
+      if(state.pendingCongrats){
+        state.pendingCongrats = false;
+        showCongrats();
+      } else {
+        startMission();
+      }
+    }, 1300);
+  }
+
+  function checkQuizProgress(now){
+    if(state.phase !== "quiz") return;
+    var remaining = state.quizEndTime - now;
+    var frac = Math.max(0, Math.min(1, remaining/state.quizDurationMs));
+    el.timerBarFill.style.width = (frac*100) + "%";
+    el.timerBarFill.style.background = frac>0.5 ? "var(--green)" : (frac>0.22 ? "var(--gold)" : "var(--red)");
+
+    var secLeft = Math.ceil(remaining/1000);
+    if(secLeft<=3 && secLeft>0 && secLeft!==state.lastTickSecond){
+      state.lastTickSecond = secLeft;
+      sfx.tick();
+    }
+    if(remaining <= 0 && !state.quizAnswered){
+      resolveQuiz(null);
+    }
+  }
+
+  function showPopup(isFail, icon, title, sub, extra){
+    el.popupCard.classList.toggle("fail", !!isFail);
+    el.popupCard.querySelector(".pc-icon").textContent = icon;
+    el.popupCard.querySelector(".pc-title").textContent = title;
+    el.popupCard.querySelector(".pc-sub").textContent = sub;
+    el.popupCard.querySelector(".pc-extra").textContent = extra;
+    el.popupCard.classList.add("show");
+  }
+  function hidePopup(){ el.popupCard.classList.remove("show"); }
+
+  /* ============ All-50 congratulations ============ */
+  var PRIZE_BASE = 1000;
+  function showCongrats(){
+    state.phase = "congrats";
+    var cfg = DIFFICULTY[state.diff];
+    var prize = Math.round(PRIZE_BASE * cfg.scoreMult);
+    state.score += prize;
+    updateHud();
+    sfx.newBest();
+    el.congratsPrize.textContent = "🎁 Bonus Prize: +" + prize + " points!";
+    el.congratsCard.classList.add("show");
+  }
+  function flashRed(){
+    el.flashOverlay.style.background = "#ff5f5f";
+    el.flashOverlay.style.transition = "none";
+    el.flashOverlay.style.opacity = "0.55";
+    requestAnimationFrame(function(){
+      el.flashOverlay.style.transition = "opacity .5s ease";
+      el.flashOverlay.style.opacity = "0";
+    });
+  }
+
+  /* ============ Main loop ============ */
+  function loop(t){
+    if(!state.running || state.paused){ return; }
+    var now = performance.now();
+    var dt = state.lastFrameT ? Math.min(0.05, (now-state.lastFrameT)/1000) : 0.016;
+    state.lastFrameT = now;
+
+    updatePlane(dt, now);
+    updateClouds(dt, now);
+    checkMissionProgress(now);
+    checkQuizProgress(now);
+
+    state.rafId = requestAnimationFrame(loop);
+  }
+  function startLoop(){
+    state.lastFrameT = 0;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = requestAnimationFrame(loop);
+  }
+  function stopLoop(){
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+  }
+
+  /* ============ Game flow ============ */
+  function startGame(){
+    state.runToken++;
+    var cfg = DIFFICULTY[state.diff];
+    state.score = 0;
+    state.lives = cfg.lives;
+    state.learnedSet = {};
+    state.totalCorrect = 0;
+    state.congratsTriggered = false;
+    state.pendingCongrats = false;
+    state.missedMap = {};
+    state.deck = []; state.deckIndex = 0; state.lastServed = null;
+    state.plane.x = 768; state.plane.y = 512; state.plane.vx=0; state.plane.vy=0; state.plane.angle=0;
+    state.plane.tx = 768; state.plane.ty = 512; state.plane.impairedUntil = 0;
+    state.lastHitTime = -9999;
+    el.plane.style.transform = "translate3d(768px,512px,0) rotate(0deg)";
+    hidePopup();
+    el.quizCard.classList.remove("show");
+    el.congratsCard.classList.remove("show");
+    el.targetPing.style.display = "none";
+
+    fitStage();
+    spawnClouds();
+    updateHud();
+
+    el.hud.style.display = "flex";
+    showScreen(null);
+    el.screenTitle.classList.remove("active");
+    el.screenHow.classList.remove("active");
+    el.screenOver.classList.remove("active");
+
+    state.running = true;
+    state.paused = false;
+    playMusic();
+    startMission();
+    startLoop();
+  }
+
+  function gameOver(){
+    state.running = false;
+    stopLoop();
+    el.hud.style.display = "none";
+
+    var isNewBest = state.score > state.bestScore;
+    if(isNewBest){ state.bestScore = state.score; }
+    saveBest();
+    if(isNewBest) sfx.newBest(); else sfx.gameOver();
+
+    el.overTitle.textContent = "Game Over";
+    el.newBestBadge.style.display = isNewBest ? "inline-block" : "none";
+    el.finalScore.textContent = state.score;
+    var learnedCount = Object.keys(state.learnedSet).length;
+    var learnedDisplay = learnedCount >= 50 ? state.totalCorrect : learnedCount;
+    el.finalLearned.textContent = learnedDisplay + "/50";
+    el.finalBest.textContent = state.bestScore;
+    el.bestScoreTitle.textContent = state.bestScore;
+
+    var missedAbbrs = Object.keys(state.missedMap);
+    el.missedList.innerHTML = "";
+    if(missedAbbrs.length === 0){
+      el.missedList.innerHTML = '<div id="noMissed">🌟 Perfect run — no missed states!</div>';
+    } else {
+      missedAbbrs.sort(function(a,b){ return state.missedMap[a].name.localeCompare(state.missedMap[b].name); });
+      missedAbbrs.forEach(function(ab){
+        var m = state.missedMap[ab];
+        var row = document.createElement("div");
+        row.className = "missed-row";
+        row.innerHTML = '<span class="st">'+m.name+'</span><span class="cap">'+m.capital+'</span>';
+        el.missedList.appendChild(row);
+      });
+    }
+    showScreen("over");
+  }
+
+  /* ============ Pause / resume ============ */
+  function pauseGame(){
+    if(!state.running || state.paused) return;
+    state.paused = true;
+    stopLoop();
+    el.pauseVeil.classList.add("show");
+    el.bgMusic.pause();
+  }
+  function resumeGame(){
+    if(!state.running || !state.paused) return;
+    state.paused = false;
+    el.pauseVeil.classList.remove("show");
+    playMusic();
+    if(state.phase==="mission"){
+      var remaining = state.missionEndTime - performance.now();
+      if(remaining < 0) remaining = 0;
+      state.missionEndTime = performance.now() + remaining;
+    } else if(state.phase==="quiz"){
+      var qRemaining = state.quizEndTime - performance.now();
+      if(qRemaining < 0) qRemaining = 0;
+      state.quizEndTime = performance.now() + qRemaining;
+    }
+    startLoop();
+  }
+  el.resumeBtn.addEventListener("click", function(){ sfx.click(); resumeGame(); });
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) pauseGame(); else if(state.running) { /* wait for explicit resume tap */ }
+  });
+
+  /* ============ UI wiring ============ */
+  function updateDiffDesc(){
+    el.diffDesc.textContent = DIFFICULTY[state.diff].desc;
+  }
+  Array.prototype.forEach.call(el.diffRow.querySelectorAll(".diff-btn"), function(btn){
+    btn.addEventListener("click", function(){
+      sfx.click();
+      state.diff = btn.getAttribute("data-diff");
+      Array.prototype.forEach.call(el.diffRow.querySelectorAll(".diff-btn"), function(b){ b.classList.toggle("active", b===btn); });
+      updateDiffDesc();
+    });
+  });
+  updateDiffDesc();
+
+  function updateModeUI(){
+    var isCapital = state.questionMode === "capital";
+    el.modeStateBtn.classList.toggle("active", !isCapital);
+    el.modeCapitalBtn.classList.toggle("active", isCapital);
+    el.howMissionLine.textContent = isCapital
+      ? "Each mission names a capital — find the state it belongs to before the timer runs out!"
+      : "Each mission names a state — fly there before the timer runs out!";
+    el.howBonusLine.textContent = isCapital ? "for the state's name" : "for its capital";
+  }
+  el.modeStateBtn.addEventListener("click", function(){ sfx.click(); state.questionMode = "state"; updateModeUI(); });
+  el.modeCapitalBtn.addEventListener("click", function(){ sfx.click(); state.questionMode = "capital"; updateModeUI(); });
+  updateModeUI();
+
+  el.startBtn.addEventListener("click", function(){ sfx.click(); startGame(); });
+  el.howToBtn.addEventListener("click", function(){ sfx.click(); showScreen("how"); });
+  el.howBackBtn.addEventListener("click", function(){ sfx.click(); showScreen("title"); });
+  el.playAgainBtn.addEventListener("click", function(){ sfx.click(); startGame(); });
+  el.menuBtn.addEventListener("click", function(){ sfx.click(); showScreen("title"); });
+  el.congratsContinueBtn.addEventListener("click", function(){
+    sfx.click();
+    el.congratsCard.classList.remove("show");
+    startMission();
+  });
+  el.congratsRestartBtn.addEventListener("click", function(){
+    sfx.click();
+    el.congratsCard.classList.remove("show");
+    startGame();
+  });
+
+  el.muteBtn.addEventListener("click", function(){
+    state.audioEnabled = !state.audioEnabled;
+    el.muteBtn.textContent = state.audioEnabled ? "🔊" : "🔇";
+    el.bgMusic.muted = !state.audioEnabled;
+    if(state.audioEnabled) playMusic();
+  });
+
+  el.restartBtn.addEventListener("click", function(){
+    sfx.click();
+    state.runToken++;
+    state.running = false;
+    state.paused = false;
+    stopLoop();
+    hidePopup();
+    el.quizCard.classList.remove("show");
+    el.congratsCard.classList.remove("show");
+    el.targetPing.style.display = "none";
+    el.hud.style.display = "none";
+    showScreen("title");
+  });
+
+  /* ============ SDK system hooks ============ */
+  if(SDK && SDK.system){
+    safe(function(){
+      if(typeof SDK.system.isAudioEnabled === "function"){
+        state.audioEnabled = !!SDK.system.isAudioEnabled();
+        el.muteBtn.textContent = state.audioEnabled ? "🔊" : "🔇";
+        el.bgMusic.muted = !state.audioEnabled;
+      }
+      if(typeof SDK.system.onAudioEnabledChange === "function"){
+        SDK.system.onAudioEnabledChange(function(isOn){
+          state.audioEnabled = !!isOn;
+          el.muteBtn.textContent = state.audioEnabled ? "🔊" : "🔇";
+          el.bgMusic.muted = !state.audioEnabled;
+          if(state.audioEnabled) playMusic();
+        });
+      }
+      if(typeof SDK.system.onPause === "function"){
+        SDK.system.onPause(function(){ pauseGame(); });
+      }
+      if(typeof SDK.system.onResume === "function"){
+        SDK.system.onResume(function(){ /* wait for explicit resume tap */ });
+      }
+    });
+  }
+
+  /* ============ Boot ============ */
+  loadBest();
+  fitStage();
+  showScreen("title");
+
+  requestAnimationFrame(function(){
+    if(SDK && SDK.game && typeof SDK.game.firstFrameReady === "function"){
+      safe(function(){ SDK.game.firstFrameReady(); });
+    }
+    if(SDK && SDK.game && typeof SDK.game.gameReady === "function"){
+      safe(function(){ SDK.game.gameReady(); });
+    }
+  });
+
+})();
+</script>
+</body>
+</html>

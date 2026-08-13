@@ -1,0 +1,21 @@
+/* ============================================================
+   SPACING — Hey AI Help
+   4px base unit. Section rhythm 96px; generous 32px card padding.
+   ============================================================ */
+:root {
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  --space-section: 96px;
+
+  /* Common composite measures */
+  --container-max: 1200px;       /* centered max content width */
+  --card-pad: var(--space-xl);   /* feature / pricing / model cards */
+  --card-pad-tight: var(--space-lg); /* code-window cards, connector tiles */
+  --callout-pad: var(--space-xxl);   /* coral callout cards */
+  --cta-band-pad: 64px;          /* large dark/coral pre-footer bands */
+}

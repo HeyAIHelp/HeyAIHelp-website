@@ -1,0 +1,18 @@
+/* ============================================================
+   FONTS — Hey AI Help
+   Display:  Newsreader        (substitute for Copernicus / Tiempos Headline)
+   Body/UI:  Inter             (substitute for StyreneB)
+   Code:     JetBrains Mono
+   ------------------------------------------------------------
+   Copernicus & StyreneB are licensed faces and not webfont-available.
+   Newsreader is the closest warm-editorial transitional serif on
+   Google Fonts (better display fidelity to Tiempos than Cormorant's
+   high-contrast didone). Inter matches StyreneB's humanist proportions.
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  --font-display: "Newsreader", "Tiempos Headline", Garamond, "Times New Roman", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+}

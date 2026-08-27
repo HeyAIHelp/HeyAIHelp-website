@@ -1,0 +1,5 @@
+# Editable React sources (each .html already has the built, deployable copy)
+*.jsx
+
+# Local dev preview config, not part of the deployed site
+.claude/

@@ -32,9 +32,15 @@
   </url>
   <url>
     <loc>https://heyaihelp.com/blog.html</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://heyaihelp.com/blog-ai-for-medical-offices.html</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://heyaihelp.com/blog-claude-for-small-business-vs-working-for-you.html</loc>

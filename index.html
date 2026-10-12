@@ -188,7 +188,8 @@ const NAV_ITEMS = [
 /* Jingle player: the header button (our jingle) and page links (client jingles) open a popup with an image, player, and download. */
 const JINGLES = {
   hah: { src: "music/hey-ay-eye-help.mp3", image: "assets/og-image.jpg", alt: "Hey AI, Help! electronic business card", file: "Hey AI Help Jingle.mp3", wide: true },
-  nash: { src: "music/call-nash-builders.mp3", image: "assets/nash-builders-logo.png", alt: "Nash Builders logo", file: "Nash Builders LLC Jingle.mp3", wide: false },
+  nash: { src: "music/call-nash-builders.mp3", image: "assets/nash-builders-logo.png", alt: "Nash Builders logo", file: "Nash Builders LLC Jingle.mp3", wide: false, title: "Nash Builders LLC jingle" },
+  cascade: { src: "music/cascade-farm-and-fleet.mp3", image: "assets/cascade-logo.png", alt: "Cascade Farm & Fleet Services logo", file: "Cascade Farm and Fleet Services Jingle.mp3", wide: false, title: "Cascade Farm & Fleet Services jingle" },
 };
 function JingleButton() {
   const audioRef = React.useRef(null);
@@ -221,12 +222,12 @@ function JingleButton() {
         <span className="jingle-label">Hear our jingle</span>
       </button>
       {j && ReactDOM.createPortal(
-        <div className="jingle-modal" role="dialog" aria-modal="true" aria-label={track === "nash" ? "Nash Builders LLC jingle" : "Hey AI, Help! jingle"}
+        <div className="jingle-modal" role="dialog" aria-modal="true" aria-label={track === "hah" ? "Hey AI, Help! jingle" : j.title}
           onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
           <div className="jingle-card">
             <button type="button" className="jingle-close" aria-label="Close player" onClick={close}>&times;</button>
             <img className={"jingle-logo" + (j.wide ? " wide" : "")} src={j.image} alt={j.alt} />
-            <p className="jingle-title">{track === "nash" ? "Nash Builders LLC jingle" : <><Brand /> jingle</>}</p>
+            <p className="jingle-title">{track === "hah" ? <><Brand /> jingle</> : j.title}</p>
             <audio key={track} ref={audioRef} src={j.src} controls preload="auto"
               onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} />
             <a className="jingle-download" href={j.src} download={j.file}>Download MP3</a>

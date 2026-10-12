@@ -387,3 +387,67 @@ textarea.field { height: auto; padding: 12px 14px; resize: vertical; min-height:
 .post-card h3 { font-size: 20px; font-weight: 600; color: var(--color-ink); margin: 0; line-height: 1.3; }
 .post-card p { margin: 0; color: var(--color-body); font-size: 15.5px; line-height: 1.6; flex: 1 1 auto; }
 .post-card-meta { color: var(--color-muted); font-size: 13px; margin-top: 6px; }
+
+/* ---------- radio jingle button (header) ---------- */
+.nav-brand { display: flex; align-items: center; gap: 18px; }
+.jingle-btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  height: 36px; padding: 0 15px 0 4px;
+  border: 1px solid var(--color-hairline); border-radius: 999px;
+  background: var(--color-canvas); color: var(--color-ink);
+  font-family: var(--font-body); font-size: 14px; font-weight: 600; line-height: 1;
+  cursor: pointer; white-space: nowrap;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.jingle-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.jingle-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.jingle-icon {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--color-primary); color: var(--color-on-primary);
+}
+.jingle-icon svg { width: 12px; height: 12px; }
+.jingle-btn.playing { border-color: var(--color-primary); }
+@media (prefers-reduced-motion: no-preference) {
+  .jingle-btn.playing .jingle-icon { animation: jingle-pulse 1.6s ease-out infinite; }
+}
+@keyframes jingle-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(254, 133, 3, 0.45); }
+  100% { box-shadow: 0 0 0 10px rgba(254, 133, 3, 0); }
+}
+/* Tighter screens: icon only, label kept for screen readers */
+@media (max-width: 1180px) {
+  .jingle-btn { width: 36px; padding: 0; justify-content: center; }
+  .jingle-label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+}
+@media (max-width: 720px) { .nav-brand { gap: 12px; } }
+
+/* ---------- jingle player popup ---------- */
+.jingle-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(0, 16, 44, 0.6);
+}
+.jingle-card {
+  position: relative; width: min(460px, 100%);
+  padding: 30px 24px 24px; border-radius: 18px;
+  background: var(--color-canvas); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
+}
+.jingle-close {
+  position: absolute; top: 8px; right: 10px; width: 34px; height: 34px;
+  border: 0; border-radius: 50%; background: transparent; color: var(--color-muted);
+  font-size: 26px; line-height: 1; cursor: pointer;
+}
+.jingle-close:hover { color: var(--color-ink); }
+.jingle-logo { display: block; width: 100%; max-width: 237px; height: auto; border-radius: 12px; }
+.jingle-logo.wide { max-width: 100%; }
+.jingle-title { margin: 0; font-family: var(--font-body); font-size: 17px; font-weight: 600; color: var(--color-ink); }
+.jingle-card audio { width: 100%; }
+.jingle-download {
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
+  color: var(--color-primary); text-decoration: underline;
+}

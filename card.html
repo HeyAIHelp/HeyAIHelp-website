@@ -26,11 +26,21 @@
   body{display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:18px;box-sizing:border-box;}
   a.card{display:block;width:100%;max-width:780px;line-height:0;}
   a.card img{width:100%;height:auto;display:block;border-radius:14px;box-shadow:0 24px 64px rgba(0,0,0,.55);}
+  /* portrait phones: show the tall card edge to edge */
+  @media (orientation: portrait){
+    html,body{background:#021331;}
+    body{padding:0;}
+    a.card{max-width:none;width:100%;height:100vh;height:100dvh;}
+    a.card img{height:100%;object-fit:contain;border-radius:0;box-shadow:none;}
+  }
 </style>
 </head>
 <body>
   <a class="card" href="index.html" aria-label="Visit HeyAIHelp.com">
-    <img src="assets/og-image.jpg" alt="Denise, Hey AI, Help! business card. Tap to visit HeyAIHelp.com.">
+    <picture>
+      <source media="(orientation: portrait)" srcset="assets/card-portrait.jpg">
+      <img src="assets/og-image.jpg" alt="Denise, Hey AI, Help! business card. Tap to visit HeyAIHelp.com.">
+    </picture>
   </a>
 </body>
 </html>
